@@ -2,9 +2,11 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { useAddEvent } from "@/calendar/hooks/use-add-event";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,7 @@ interface IProps {
 
 export function AddEventDialog({ children, startDate, startTime }: IProps) {
   const { users } = useCalendar();
+  const { addEvent, isLoading } = useAddEvent();
 
   const { isOpen, onClose, onToggle } = useDisclosure();
 
@@ -37,26 +40,42 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
     defaultValues: {
       title: "",
       description: "",
-      startDate: typeof startDate !== "undefined" ? startDate : undefined,
-      startTime: typeof startTime !== "undefined" ? startTime : undefined,
+      startDate: startDate || new Date(),
+      startTime: startTime || { hour: 9, minute: 0 },
+      endDate: startDate || new Date(),
+      endTime: startTime ? { hour: startTime.hour + 1, minute: startTime.minute } : { hour: 10, minute: 0 },
+      color: "blue",
+      user: users[0]?.id || "",
     },
   });
 
-  const onSubmit = (_values: TEventFormData) => {
-    // TO DO: Create use-add-event hook
-    onClose();
-    form.reset();
+  const onSubmit = async (values: TEventFormData) => {
+    try {
+      await addEvent(values);
+      toast.success("Event created successfully!");
+      onClose();
+      form.reset();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create event");
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    onToggle();
+    if (!open) {
+      form.reset();
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onToggle}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add New Event</DialogTitle>
           <DialogDescription>
-            This is just and example of how to use the form. In a real application, you would call the API to create the event
+            Create a new event in your calendar. Fill in the details below.
           </DialogDescription>
         </DialogHeader>
 
@@ -71,7 +90,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Select an option" />
+                        <SelectValue placeholder="Select a user" />
                       </SelectTrigger>
 
                       <SelectContent>
@@ -103,7 +122,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   <FormLabel htmlFor="title">Title</FormLabel>
 
                   <FormControl>
-                    <Input id="title" placeholder="Enter a title" data-invalid={fieldState.invalid} {...field} />
+                    <Input id="title" placeholder="Enter event title" data-invalid={fieldState.invalid} {...field} />
                   </FormControl>
 
                   <FormMessage />
@@ -111,12 +130,12 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
               )}
             />
 
-            <div className="flex items-start gap-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="startDate"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel htmlFor="startDate">Start Date</FormLabel>
 
                     <FormControl>
@@ -124,7 +143,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                         id="startDate"
                         value={field.value}
                         onSelect={date => field.onChange(date as Date)}
-                        placeholder="Select a date"
+                        placeholder="Select start date"
                         data-invalid={fieldState.invalid}
                       />
                     </FormControl>
@@ -138,7 +157,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                 control={form.control}
                 name="startTime"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel>Start Time</FormLabel>
 
                     <FormControl>
@@ -151,18 +170,18 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
               />
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="endDate"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel>End Date</FormLabel>
                     <FormControl>
                       <SingleDayPicker
                         value={field.value}
                         onSelect={date => field.onChange(date as Date)}
-                        placeholder="Select a date"
+                        placeholder="Select end date"
                         data-invalid={fieldState.invalid}
                       />
                     </FormControl>
@@ -175,7 +194,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                 control={form.control}
                 name="endTime"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel>End Time</FormLabel>
 
                     <FormControl>
@@ -197,7 +216,7 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Select an option" />
+                        <SelectValue placeholder="Select a color" />
                       </SelectTrigger>
 
                       <SelectContent>
@@ -265,7 +284,12 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
                   <FormLabel>Description</FormLabel>
 
                   <FormControl>
-                    <Textarea {...field} value={field.value} data-invalid={fieldState.invalid} />
+                    <Textarea 
+                      {...field} 
+                      value={field.value} 
+                      placeholder="Enter event description"
+                      data-invalid={fieldState.invalid} 
+                    />
                   </FormControl>
 
                   <FormMessage />
@@ -277,13 +301,13 @@ export function AddEventDialog({ children, startDate, startTime }: IProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" disabled={isLoading}>
               Cancel
             </Button>
           </DialogClose>
 
-          <Button form="event-form" type="submit">
-            Create Event
+          <Button form="event-form" type="submit" disabled={isLoading}>
+            {isLoading ? "Creating..." : "Create Event"}
           </Button>
         </DialogFooter>
       </DialogContent>

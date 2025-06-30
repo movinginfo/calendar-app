@@ -3,10 +3,11 @@
 import { parseISO } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
-import { useUpdateEvent } from "@/calendar/hooks/use-update-event";
+import { useEvents } from "@/calendar/hooks/use-events";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,8 +34,7 @@ export function EditEventDialog({ children, event }: IProps) {
   const { isOpen, onClose, onToggle } = useDisclosure();
 
   const { users } = useCalendar();
-
-  const { updateEvent } = useUpdateEvent();
+  const { updateEvent, isLoading } = useEvents();
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
@@ -50,39 +50,50 @@ export function EditEventDialog({ children, event }: IProps) {
     },
   });
 
-  const onSubmit = (values: TEventFormData) => {
-    const user = users.find(user => user.id === values.user);
+  const onSubmit = async (values: TEventFormData) => {
+    try {
+      const user = users.find(user => user.id === values.user);
 
-    if (!user) throw new Error("User not found");
+      if (!user) {
+        throw new Error("User not found");
+      }
 
-    const startDateTime = new Date(values.startDate);
-    startDateTime.setHours(values.startTime.hour, values.startTime.minute);
+      const startDateTime = new Date(values.startDate);
+      startDateTime.setHours(values.startTime.hour, values.startTime.minute, 0, 0);
 
-    const endDateTime = new Date(values.endDate);
-    endDateTime.setHours(values.endTime.hour, values.endTime.minute);
+      const endDateTime = new Date(values.endDate);
+      endDateTime.setHours(values.endTime.hour, values.endTime.minute, 0, 0);
 
-    updateEvent({
-      ...event,
-      user,
-      title: values.title,
-      color: values.color,
-      description: values.description,
-      startDate: startDateTime.toISOString(),
-      endDate: endDateTime.toISOString(),
-    });
+      // Validate that end time is after start time
+      if (endDateTime <= startDateTime) {
+        throw new Error("End time must be after start time");
+      }
 
-    onClose();
+      await updateEvent(event.id, {
+        user,
+        title: values.title,
+        color: values.color,
+        description: values.description,
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
+      });
+
+      toast.success("Event updated successfully!");
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update event");
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onToggle}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
           <DialogDescription>
-            This is just and example of how to use the form. In a real application, you would call the API to update the event
+            Update the event details below.
           </DialogDescription>
         </DialogHeader>
 
@@ -97,7 +108,7 @@ export function EditEventDialog({ children, event }: IProps) {
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Select an option" />
+                        <SelectValue placeholder="Select a user" />
                       </SelectTrigger>
 
                       <SelectContent>
@@ -129,7 +140,7 @@ export function EditEventDialog({ children, event }: IProps) {
                   <FormLabel htmlFor="title">Title</FormLabel>
 
                   <FormControl>
-                    <Input id="title" placeholder="Enter a title" data-invalid={fieldState.invalid} {...field} />
+                    <Input id="title" placeholder="Enter event title" data-invalid={fieldState.invalid} {...field} />
                   </FormControl>
 
                   <FormMessage />
@@ -137,12 +148,12 @@ export function EditEventDialog({ children, event }: IProps) {
               )}
             />
 
-            <div className="flex items-start gap-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="startDate"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel htmlFor="startDate">Start Date</FormLabel>
 
                     <FormControl>
@@ -150,7 +161,7 @@ export function EditEventDialog({ children, event }: IProps) {
                         id="startDate"
                         value={field.value}
                         onSelect={date => field.onChange(date as Date)}
-                        placeholder="Select a date"
+                        placeholder="Select start date"
                         data-invalid={fieldState.invalid}
                       />
                     </FormControl>
@@ -164,7 +175,7 @@ export function EditEventDialog({ children, event }: IProps) {
                 control={form.control}
                 name="startTime"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel>Start Time</FormLabel>
 
                     <FormControl>
@@ -177,18 +188,18 @@ export function EditEventDialog({ children, event }: IProps) {
               />
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="endDate"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel>End Date</FormLabel>
                     <FormControl>
                       <SingleDayPicker
                         value={field.value}
                         onSelect={date => field.onChange(date as Date)}
-                        placeholder="Select a date"
+                        placeholder="Select end date"
                         data-invalid={fieldState.invalid}
                       />
                     </FormControl>
@@ -201,7 +212,7 @@ export function EditEventDialog({ children, event }: IProps) {
                 control={form.control}
                 name="endTime"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <FormLabel>End Time</FormLabel>
                     <FormControl>
                       <TimeInput value={field.value as TimeValue} onChange={field.onChange} hourCycle={12} data-invalid={fieldState.invalid} />
@@ -221,7 +232,7 @@ export function EditEventDialog({ children, event }: IProps) {
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Select an option" />
+                        <SelectValue placeholder="Select a color" />
                       </SelectTrigger>
 
                       <SelectContent>
@@ -289,7 +300,12 @@ export function EditEventDialog({ children, event }: IProps) {
                   <FormLabel>Description</FormLabel>
 
                   <FormControl>
-                    <Textarea {...field} value={field.value} data-invalid={fieldState.invalid} />
+                    <Textarea 
+                      {...field} 
+                      value={field.value} 
+                      placeholder="Enter event description"
+                      data-invalid={fieldState.invalid} 
+                    />
                   </FormControl>
 
                   <FormMessage />
@@ -301,13 +317,13 @@ export function EditEventDialog({ children, event }: IProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" disabled={isLoading}>
               Cancel
             </Button>
           </DialogClose>
 
-          <Button form="event-form" type="submit">
-            Save changes
+          <Button form="event-form" type="submit" disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

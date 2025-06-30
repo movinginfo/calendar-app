@@ -7,6 +7,7 @@ import { inter } from "@/styles/fonts";
 import { cn } from "@/lib/utils";
 
 import { Header } from "@/components/layout/header";
+import { Toaster } from "@/components/ui/toaster";
 
 import { getTheme } from "@/cookies/get";
 
@@ -33,6 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <Header />
         <Analytics />
         {children}
+        <Toaster />
       </body>
     </html>
   );
