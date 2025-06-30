@@ -30,6 +30,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(calendar)/day-view/page.js"
+    ],
+    "/(calendar)/agenda-view/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(calendar)/agenda-view/page.js"
     ]
   }
 }
