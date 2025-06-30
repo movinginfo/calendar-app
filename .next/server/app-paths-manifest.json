@@ -1,5 +1,6 @@
 {
   "/(calendar)/month-view/page": "app/(calendar)/month-view/page.js",
   "/(calendar)/year-view/page": "app/(calendar)/year-view/page.js",
-  "/(calendar)/week-view/page": "app/(calendar)/week-view/page.js"
+  "/(calendar)/week-view/page": "app/(calendar)/week-view/page.js",
+  "/(calendar)/day-view/page": "app/(calendar)/day-view/page.js"
 }

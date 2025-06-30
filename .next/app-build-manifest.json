@@ -25,6 +25,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(calendar)/week-view/page.js"
+    ],
+    "/(calendar)/day-view/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(calendar)/day-view/page.js"
     ]
   }
 }
