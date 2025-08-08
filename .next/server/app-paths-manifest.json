@@ -1,1 +1,7 @@
-{}
+{
+  "/api/ai/parse-event/route": "app/api/ai/parse-event/route.js",
+  "/api/ai/enhance-description/route": "app/api/ai/enhance-description/route.js",
+  "/api/ai/insights/route": "app/api/ai/insights/route.js",
+  "/api/ai/suggestions/route": "app/api/ai/suggestions/route.js",
+  "/(calendar)/month-view/page": "app/(calendar)/month-view/page.js"
+}
