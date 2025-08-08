@@ -61,6 +61,13 @@ A feature-rich calendar application built with Next.js, TypeScript, and Tailwind
   - Clean and modern interface
   - Dark mode support
 
+- 🤖 AI-Powered Features:
+  - Natural language event creation ("Meeting with John tomorrow at 2pm")
+  - Smart calendar insights and productivity analytics
+  - AI-generated event suggestions for better time management
+  - Enhanced event descriptions with preparation notes
+  - Intelligent scheduling recommendations
+
 ## Tech stack
 
 - **Framework**: Next.js 14
@@ -69,6 +76,7 @@ A feature-rich calendar application built with Next.js, TypeScript, and Tailwind
 - **Date Management**: date-fns
 - **UI Components**: shadcn/ui
 - **State Management**: React Context
+- **AI Integration**: Vercel AI SDK 5 with OpenAI & Google Gemini
 
 ## Getting started
 
@@ -99,6 +107,55 @@ npm run turbo
 
 4. Open your browser and navigate to `http://localhost:3000` to view the application.
 
+## AI Features Setup (Optional)
+
+To enable AI-powered features, create a `.env.local` file in the root directory:
+
+```env
+# Choose your preferred AI provider
+AI_PROVIDER=openai # or "google"
+
+# OpenAI Configuration (for GPT models)
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Google Gemini Configuration
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key_here
+```
+
+**Note**: The app works perfectly without API keys in demo mode, providing mock AI responses for development and testing.
+
+## AI Features
+
+### 🤖 Natural Language Event Creation
+Use the "AI Add" button to create events using natural language:
+- "Meeting with John tomorrow at 2pm for project review"
+- "Doctor appointment Friday at 10:30"
+- "Team standup every Monday at 9am"
+
+The AI automatically:
+- Parses dates and times (including relative dates like "tomorrow")
+- Assigns appropriate colors based on event type
+- Generates enhanced descriptions with preparation notes
+
+### 📊 Calendar Insights
+Get AI-powered analysis of your calendar patterns:
+- **Productivity Score**: Rated 1-10 based on your scheduling habits
+- **Key Insights**: Analysis of meeting frequency, work-life balance, and time distribution
+- **Recommendations**: Actionable suggestions for better time management
+
+### 💡 Smart Suggestions
+Receive intelligent recommendations for:
+- Blocking focus time for deep work
+- Scheduling breaks between meetings
+- Adding recurring planning sessions
+- Optimizing meeting patterns
+
+### 🔧 AI Configuration
+The AI features support both OpenAI and Google Gemini models:
+- **OpenAI**: GPT-4o-mini for fast, cost-effective responses
+- **Google Gemini**: Gemini-1.5-flash for powerful multimodal capabilities
+- **Demo Mode**: Full functionality without API keys for development
+
 ## Project structure
 
 The project structure is organized as follows:
@@ -109,17 +166,26 @@ src/
 ├── calendar/                     # All files related to calendar are in this folder
 │   ├── components/
 │   │   ├── agenda-view/          # Agenda view components
-│   │   ├── dialogs/              # Dialogs components
+│   │   ├── dialogs/              # Dialogs components (including AI-powered dialogs)
 │   │   ├── dnd/                  # Drag and drop components
 │   │   ├── header/               # Calendar header components
 │   │   ├── month-view/           # Month view components
 │   │   ├── week-and-day-view/    # Week and day view components
-│   │   └── year-view/            # Year view components
+│   │   ├── year-view/            # Year view components
+│   │   ├── ai-calendar-insights.tsx    # AI insights component
+│   │   └── ai-event-suggestions.tsx    # AI suggestions component
 │   ├── contexts/                 # Calendar context and state management
 │   ├── helpers/                  # Utility functions
 │   ├── interfaces/               # TypeScript interfaces
 │   └── types/                    # TypeScript types
-└── components/                   # Components not related to calendar eg: ui and layout components
+├── components/                   # Components not related to calendar eg: ui and layout components
+├── lib/
+│   └── ai-calendar-service.ts   # AI service layer for calendar features
+└── app/api/ai/                   # AI API endpoints
+    ├── parse-event/              # Natural language event parsing
+    ├── enhance-description/      # Event description enhancement
+    ├── suggestions/              # Smart event suggestions
+    └── insights/                 # Calendar analytics and insights
 ```
 
 ## How to implement in your project
