@@ -1,7 +1,7 @@
 {
-  "/(calendar)/month-view/page": "app/(calendar)/month-view/page.js",
-  "/(calendar)/week-view/page": "app/(calendar)/week-view/page.js",
-  "/(calendar)/day-view/page": "app/(calendar)/day-view/page.js",
-  "/(calendar)/agenda-view/page": "app/(calendar)/agenda-view/page.js",
-  "/(calendar)/year-view/page": "app/(calendar)/year-view/page.js"
+  "/api/ai/parse-event/route": "app/api/ai/parse-event/route.js",
+  "/api/ai/enhance-description/route": "app/api/ai/enhance-description/route.js",
+  "/api/ai/insights/route": "app/api/ai/insights/route.js",
+  "/api/ai/suggestions/route": "app/api/ai/suggestions/route.js",
+  "/(calendar)/month-view/page": "app/(calendar)/month-view/page.js"
 }

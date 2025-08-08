@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Columns, Grid3x3, List, Plus, Grid2x2, CalendarRange } from "lucide-react";
+import { Columns, Grid3x3, List, Plus, Grid2x2, CalendarRange, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -7,6 +7,7 @@ import { UserSelect } from "@/calendar/components/header/user-select";
 import { TodayButton } from "@/calendar/components/header/today-button";
 import { DateNavigator } from "@/calendar/components/header/date-navigator";
 import { AddEventDialog } from "@/calendar/components/dialogs/add-event-dialog";
+import { AIQuickAddEventDialog } from "@/calendar/components/dialogs/ai-quick-add-event-dialog";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { TCalendarView } from "@/calendar/types";
@@ -85,12 +86,21 @@ export function CalendarHeader({ view, events }: IProps) {
           <UserSelect />
         </div>
 
-        <AddEventDialog>
-          <Button className="w-full sm:w-auto">
-            <Plus />
-            Add Event
-          </Button>
-        </AddEventDialog>
+        <div className="flex gap-2">
+          <AIQuickAddEventDialog>
+            <Button variant="outline" className="gap-2">
+              <Sparkles className="size-4" />
+              AI Add
+            </Button>
+          </AIQuickAddEventDialog>
+
+          <AddEventDialog>
+            <Button className="gap-2">
+              <Plus className="size-4" />
+              Add Event
+            </Button>
+          </AddEventDialog>
+        </div>
       </div>
     </div>
   );
